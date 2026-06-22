@@ -6,57 +6,534 @@
   <title>충주 가볼만한 관광명소 지도</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <style>
-    :root{--bg:#f5f1e8;--card:#fff;--text:#171717;--muted:#666;--line:#e8dcc9;--map-h:360px}
+    :root{
+      --bg:#f5f1e8;
+      --card:#fff;
+      --text:#171717;
+      --muted:#666;
+      --line:#e6d9c7;
+      --map-h:365px;
+    }
     *{box-sizing:border-box;margin:0;padding:0}
-    html,body{width:100%;height:100%;overflow:hidden;font-family:'Apple SD Gothic Neo','Noto Sans KR',system-ui,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{width:100%;max-width:780px;height:100vh;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
-    .map-box{flex:0 0 var(--map-h);height:var(--map-h);min-height:var(--map-h);position:relative;overflow:hidden;border-radius:0 0 18px 18px;box-shadow:0 4px 16px rgba(0,0,0,.12);background:#dce6d0}
+    html,body{
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      font-family:'Apple SD Gothic Neo','Noto Sans KR',system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      width:100%;
+      max-width:780px;
+      height:100vh;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      background:var(--bg);
+    }
+    .map-box{
+      flex:0 0 var(--map-h);
+      height:var(--map-h);
+      min-height:var(--map-h);
+      position:relative;
+      overflow:hidden;
+      border-radius:0 0 18px 18px;
+      box-shadow:0 4px 16px rgba(0,0,0,.12);
+      background:#dce6d0;
+    }
     #map{width:100%;height:100%;background:#dce6d0}
-    .map-title{position:absolute;top:12px;left:12px;z-index:500;background:rgba(255,250,242,.96);border:1px solid rgba(109,76,50,.18);border-radius:999px;padding:9px 14px;font-size:15px;font-weight:800;color:#2b241d;box-shadow:0 2px 10px rgba(0,0,0,.12);pointer-events:none}
-    .leaflet-container{cursor:default!important;font-family:inherit}.leaflet-control-attribution{font-size:10px}
-    .leaflet-tooltip.place-tooltip{background:rgba(255,255,255,.98);border:0;box-shadow:0 2px 10px rgba(0,0,0,.22);border-radius:24px;padding:6px 13px 6px 7px;font-size:14px;line-height:1;font-weight:800;color:#171717;white-space:nowrap;cursor:pointer;pointer-events:all}.leaflet-tooltip.place-tooltip:before{display:none}
-    .tip-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;color:#fff;font-size:14px;font-weight:900;margin-right:7px;vertical-align:middle}
-    .filter-bar{flex:0 0 auto;display:flex;gap:8px;padding:12px 12px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--bg);border-bottom:1px solid var(--line)}.filter-bar::-webkit-scrollbar{display:none}
-    .filter{flex:0 0 auto;min-height:42px;padding:10px 15px;border:1px solid #d9c8ad;border-radius:999px;background:#fff;color:#40372f;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 1px 5px rgba(0,0,0,.05)}.filter.active{background:#25364f;color:#fff;border-color:#25364f}
-    .cards{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 30px;display:flex;flex-direction:column;gap:11px;background:var(--bg)}
-    .place-card{flex:0 0 auto;background:var(--card);border-radius:17px;overflow:hidden;border:2.5px solid transparent;box-shadow:0 2px 10px rgba(0,0,0,.07);cursor:pointer;transition:box-shadow .22s,border-color .22s,transform .22s}.place-card:hover{box-shadow:0 5px 18px rgba(0,0,0,.12);transform:translateY(-1px)}.place-card.active{order:-1;border-color:var(--c);box-shadow:0 6px 22px rgba(0,0,0,.14)}
-    .card-main{display:flex;gap:12px;padding:15px 15px 12px}.num{flex:0 0 auto;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:900;margin-top:1px}.place-name{font-size:17px;line-height:1.35;font-weight:900;color:#171717;margin-bottom:5px;word-break:keep-all}.desc{color:var(--muted);font-size:13.5px;line-height:1.55;word-break:keep-all}.tag{display:inline-flex;align-items:center;min-height:27px;margin-top:8px;padding:5px 10px;border-radius:999px;font-size:12.5px;font-weight:800;background:#f3eadb;color:#5a432b}
-    .card-buttons{display:none;gap:8px;flex-wrap:wrap;padding:0 15px 15px 59px}.place-card.active .card-buttons{display:flex}.btn{min-height:44px;padding:10px 15px;border-radius:999px;font-size:15px;font-weight:800;line-height:1;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;color:#fff;border:0;white-space:nowrap}.btn.map{background:#244b3e}.btn.info{background:#25364f}.btn.reserve{background:#6d4c32}.btn.park{background:#333}.btn:hover{opacity:.86}
-    @keyframes popIn{from{opacity:.2;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}.pop{animation:popIn .22s ease both}
-    @media(max-width:720px){:root{--map-h:345px}.map-title{top:10px;left:10px;font-size:14px;padding:8px 12px}.leaflet-tooltip.place-tooltip{font-size:13px;padding:5px 11px 5px 6px}.tip-num{width:24px;height:24px;font-size:13px;margin-right:5px}.filter{font-size:14px;min-height:42px;padding:10px 14px}.place-name{font-size:16px}.desc{font-size:13px}.btn{font-size:14.5px;min-height:44px;padding:10px 14px}.card-buttons{padding-left:15px}}
+    .map-title{
+      position:absolute;
+      top:12px;
+      left:12px;
+      z-index:500;
+      background:rgba(255,250,242,.96);
+      border:1px solid rgba(109,76,50,.2);
+      border-radius:999px;
+      padding:9px 14px;
+      font-size:15px;
+      font-weight:900;
+      color:#2b241d;
+      box-shadow:0 2px 10px rgba(0,0,0,.12);
+      pointer-events:none;
+    }
+    .leaflet-container{cursor:default!important;font-family:inherit}
+    .leaflet-control-attribution{font-size:10px}
+    .leaflet-tooltip.place-tooltip{
+      background:rgba(255,255,255,.98);
+      border:0;
+      box-shadow:0 2px 10px rgba(0,0,0,.24);
+      border-radius:24px;
+      padding:6px 13px 6px 7px;
+      font-size:14px;
+      line-height:1;
+      font-weight:900;
+      color:#171717;
+      white-space:nowrap;
+      cursor:pointer;
+      pointer-events:all;
+    }
+    .leaflet-tooltip.place-tooltip::before{display:none}
+    .tip-num{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      color:#fff;
+      font-size:14px;
+      font-weight:900;
+      margin-right:7px;
+      vertical-align:middle;
+    }
+    .filter-bar{
+      flex:0 0 auto;
+      display:flex;
+      gap:8px;
+      padding:12px 12px 10px;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      background:var(--bg);
+      border-bottom:1px solid var(--line);
+    }
+    .filter-bar::-webkit-scrollbar{display:none}
+    .filter{
+      flex:0 0 auto;
+      min-height:42px;
+      padding:10px 15px;
+      border:1px solid #d8c7ad;
+      border-radius:999px;
+      background:#fff;
+      color:#40372f;
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
+      box-shadow:0 1px 5px rgba(0,0,0,.05);
+    }
+    .filter.active{
+      background:#25364f;
+      color:#fff;
+      border-color:#25364f;
+    }
+    .cards{
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      padding:12px 12px 30px;
+      display:flex;
+      flex-direction:column;
+      gap:11px;
+      background:var(--bg);
+    }
+    .place-card{
+      flex:0 0 auto;
+      background:var(--card);
+      border-radius:17px;
+      overflow:hidden;
+      border:2.5px solid transparent;
+      box-shadow:0 2px 10px rgba(0,0,0,.07);
+      cursor:pointer;
+      transition:box-shadow .22s,border-color .22s,transform .22s;
+    }
+    .place-card:hover{box-shadow:0 5px 18px rgba(0,0,0,.12);transform:translateY(-1px)}
+    .place-card.active{
+      order:-1;
+      border-color:var(--c);
+      box-shadow:0 6px 22px rgba(0,0,0,.14);
+    }
+    .card-main{
+      display:flex;
+      gap:12px;
+      padding:15px 15px 12px;
+    }
+    .num{
+      flex:0 0 auto;
+      width:32px;
+      height:32px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:15px;
+      font-weight:900;
+      margin-top:1px;
+    }
+    .place-name{
+      font-size:17px;
+      line-height:1.35;
+      font-weight:900;
+      color:#171717;
+      margin-bottom:5px;
+      word-break:keep-all;
+    }
+    .desc{
+      color:var(--muted);
+      font-size:13.5px;
+      line-height:1.55;
+      word-break:keep-all;
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      min-height:27px;
+      margin-top:8px;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12.5px;
+      font-weight:900;
+      background:#f3eadb;
+      color:#5a432b;
+    }
+    .card-buttons{
+      display:none;
+      gap:8px;
+      flex-wrap:wrap;
+      padding:0 15px 15px 59px;
+    }
+    .place-card.active .card-buttons{display:flex}
+    .btn{
+      min-height:44px;
+      padding:10px 15px;
+      border-radius:999px;
+      font-size:15px;
+      font-weight:900;
+      line-height:1;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      border:none;
+      white-space:nowrap;
+    }
+    .btn.map{background:#244b3e}
+    .btn.info{background:#25364f}
+    .btn.reserve{background:#6d4c32}
+    .btn.park{background:#333}
+    .btn:hover{opacity:.86}
+    @keyframes popIn{from{opacity:.2;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+    .pop{animation:popIn .22s ease both}
+    @media(max-width:720px){
+      :root{--map-h:350px}
+      .map-title{top:10px;left:10px;font-size:14px;padding:8px 12px}
+      .leaflet-tooltip.place-tooltip{font-size:13px;padding:5px 11px 5px 6px}
+      .tip-num{width:24px;height:24px;font-size:13px;margin-right:5px}
+      .filter{font-size:14px;min-height:42px;padding:10px 14px}
+      .place-name{font-size:16px}
+      .desc{font-size:13px}
+      .btn{font-size:14.5px;min-height:44px;padding:10px 14px}
+      .card-buttons{padding-left:15px}
+    }
     @media(max-height:620px){:root{--map-h:320px}}
   </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="map-box"><div id="map"></div><div class="map-title">충주 가볼만한 관광명소</div></div>
+  <div class="map-box">
+    <div id="map"></div>
+    <div class="map-title">충주 가볼만한 관광명소</div>
+  </div>
   <div class="filter-bar" id="filters"></div>
   <div class="cards" id="cards"></div>
 </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-const places=[
-{id:1,name:'활옥동굴',short:'활옥동굴',lat:36.978528,lng:127.981194,cat:'충주호권',color:'#2f5b4a',tag:'동굴 · 카약 체험',desc:'폐광을 활용한 충주 대표 실내 여행지. 동굴 호수 카약과 빛 조형물로 많이 찾는 코스입니다.',tipDir:'right',tipOffset:[12,0],links:[{label:'네이버 지도',url:'https://map.naver.com/p/search/활옥동굴',type:'map'},{label:'관광 정보',url:'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=4f4129ba-d545-49c9-b099-9e2652d8a8ee',type:'info'},{label:'네이버 예약',url:'https://booking.naver.com/booking/3/bizes/183299',type:'reserve'}]},
-{id:2,name:'충주호 유람선',short:'충주호 유람선',lat:37.0128,lng:128.0006,cat:'충주호권',color:'#315f7d',tag:'충주나루 · 유람선',desc:'충주호 풍경을 배 위에서 둘러보는 코스. 예약·승선 위치 확인 후 방문하는 것이 좋습니다.',tipDir:'top',tipOffset:[0,-14],links:[{label:'네이버 지도',url:'https://map.naver.com/p/search/충주호크루즈%20충주나루',type:'map'},{label:'승선 예약',url:'https://cj.chungjuho.com/htm/intr01.htm',type:'reserve'},{label:'승선 위치',url:'https://cj.chungjuho.com/htm/intr04.htm',type:'info'}]},
-{id:3,name:'탄금대',short:'탄금대',lat:36.98833,lng:127.89778,cat:'시내·역사',color:'#7a5131',tag:'역사 · 남한강 전망',desc:'우륵의 가야금 이야기와 임진왜란 신립 장군의 역사성이 함께 남아 있는 충주 대표 명소입니다.',tipDir:'left',tipOffset:[-12,0],links:[{label:'네이버 지도',url:'https://map.naver.com/p/search/충주%20탄금대',type:'map'},{label:'관광 정보',url:'https://www.kctg.or.kr/tour/touristSiteView.do?tourist_cd=TOURIST_ID00010523',type:'info'},{label:'국가유산 정보',url:'https://www.heritage.go.kr/heri/cul/culSelectDetail.do?ccbaCpno=1353300420000&pageNo=1_1_1_1&sngl=Y',type:'park'}]},
-{id:4,name:'중앙탑사적공원',short:'중앙탑공원',lat:37.0166,lng:127.8578,cat:'시내·역사',color:'#5b6a35',tag:'중앙탑 · 산책',desc:'국보 충주 탑평리 칠층석탑과 넓은 잔디밭, 조각공원이 어우러진 호반 산책 명소입니다.',tipDir:'top',tipOffset:[0,-14],links:[{label:'네이버 지도',url:'https://map.naver.com/p/search/충주%20중앙탑사적공원',type:'map'},{label:'관광 정보',url:'https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=60&searchMainSe=ATTR&tourNo=471',type:'info'}]},
-{id:5,name:'충주고구려비전시관',short:'고구려비전시관',lat:37.0125,lng:127.8514,cat:'시내·역사',color:'#6b3f3f',tag:'실내 · 역사 전시',desc:'국내 유일 고구려 석비인 충주 고구려비를 중심으로 고구려 문화와 중원 역사를 볼 수 있는 곳입니다.',tipDir:'bottom',tipOffset:[0,14],links:[{label:'네이버 지도',url:'https://map.naver.com/p/search/충주고구려비전시관',type:'map'},{label:'관광 정보',url:'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=83305ab8-af95-41a8-b129-389de4bddb9a',type:'info'},{label:'해설 예약',url:'https://www.kctg.or.kr/tour/touristSiteView.do?tourist_cd=TOURIST_ID00010527',type:'reserve'}]},
-{id:6,name:'수안보온천',short:'수안보온천',lat:36.84838,lng:127.98967,cat:'수안보·월악',color:'#4c5c73',tag:'온천 · 휴식',desc:'오래된 온천 휴양지로 숙박과 온천욕을 함께 묶기 좋은 충주 남부권 대표 코스입니다.',tipDir:'right',tipOffset:[12,0],links:[{label:'네이버 지도',url:'https://map.naver.com/p/search/수안보온천',type:'map'},{label:'관광 정보',url:'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=b5650a0c-3f97-4f3b-89cd-e5f0a36cc36c',type:'info'},{label:'온천 정보',url:'https://www.suanbo.or.kr/',type:'park'}]},
-{id:7,name:'월악산국립공원',short:'월악산국립공원',lat:36.8898,lng:128.0936,cat:'수안보·월악',color:'#2f4f36',tag:'국립공원 · 산행',desc:'영봉과 송계계곡, 덕주사 권역을 함께 보는 자연 코스. 탐방 전 통제 정보를 확인하는 것이 좋습니다.',tipDir:'left',tipOffset:[-12,0],links:[{label:'네이버 지도',url:'https://map.naver.com/p/search/월악산국립공원',type:'map'},{label:'국립공원 정보',url:'https://www.knps.or.kr/front/portal/visit/visitCourseMain.do?menuNo=7020097&parkId=121400',type:'park'},{label:'탐방코스',url:'https://www.knps.or.kr/front/portal/visit/visitCourseSubMain.do?menuNo=7020097&parkId=121400&parkNavGb=park',type:'info'}]},
-{id:8,name:'수주팔봉',short:'수주팔봉',lat:36.8990,lng:127.9143,cat:'수안보·월악',color:'#7a5436',tag:'절경 · 출렁다리',desc:'달천과 여덟 봉우리가 어우러지는 충주 절경 명소. 출렁다리와 강변 풍경을 함께 보기 좋습니다.',tipDir:'bottom',tipOffset:[0,14],links:[{label:'네이버 지도',url:'https://map.naver.com/p/search/수주팔봉',type:'map'},{label:'관광 정보',url:'https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=6a052065-1151-40c2-bafa-1d820f995158',type:'info'},{label:'충북나드리',url:'https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=60&searchMainSe=ATTR&tourNo=1289',type:'park'}]}
+const places = [
+  {
+    id:1,name:'활옥동굴',short:'활옥동굴',
+    lat:36.978528,lng:127.981194,showLat:36.978528,showLng:127.981194,
+    cat:'충주호권',color:'#2f5b4a',tag:'동굴 · 카약 체험',
+    desc:'폐광을 활용한 충주 대표 실내 여행지. 동굴 호수 카약과 빛 조형물로 많이 찾는 코스입니다.',
+    tipDir:'right',tipOffset:[12,0],
+    links:[
+      ['네이버 지도','https://map.naver.com/p/search/활옥동굴','map'],
+      ['관광 정보','https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=4f4129ba-d545-49c9-b099-9e2652d8a8ee','info'],
+      ['네이버 예약','https://booking.naver.com/booking/3/bizes/183299','reserve']
+    ]
+  },
+  {
+    id:2,name:'충주호 유람선',short:'충주호 유람선',
+    lat:37.0128,lng:128.0006,showLat:37.0185,showLng:128.0185,
+    cat:'충주호권',color:'#315f7d',tag:'충주나루 · 유람선',
+    desc:'충주호 풍경을 배 위에서 둘러보는 코스. 예약·승선 위치 확인 후 방문하는 것이 좋습니다.',
+    tipDir:'right',tipOffset:[12,0],
+    links:[
+      ['네이버 지도','https://map.naver.com/p/search/충주호크루즈%20충주나루','map'],
+      ['승선 예약','https://cj.chungjuho.com/htm/intr01.htm','reserve'],
+      ['승선 위치','https://cj.chungjuho.com/htm/intr04.htm','info']
+    ]
+  },
+  {
+    id:3,name:'탄금대',short:'탄금대',
+    lat:36.98833,lng:127.89778,showLat:36.9735,showLng:127.8765,
+    cat:'시내·역사',color:'#7a5131',tag:'역사 · 남한강 전망',
+    desc:'우륵의 가야금 이야기와 임진왜란 신립 장군의 역사성이 함께 남아 있는 충주 대표 명소입니다.',
+    tipDir:'left',tipOffset:[-16,0],
+    links:[
+      ['네이버 지도','https://map.naver.com/p/search/충주%20탄금대','map'],
+      ['관광 정보','https://www.kctg.or.kr/tour/touristSiteView.do?tourist_cd=TOURIST_ID00010523','info'],
+      ['국가유산 정보','https://www.heritage.go.kr/heri/cul/culSelectDetail.do?ccbaCpno=1353300420000&pageNo=1_1_1_1&sngl=Y','park']
+    ]
+  },
+  {
+    id:4,name:'중앙탑사적공원',short:'중앙탑공원',
+    lat:37.0166,lng:127.8578,showLat:37.0375,showLng:127.8440,
+    cat:'시내·역사',color:'#5b6a35',tag:'중앙탑 · 산책',
+    desc:'국보 충주 탑평리 칠층석탑과 넓은 잔디밭, 조각공원이 어우러진 호반 산책 명소입니다.',
+    tipDir:'top',tipOffset:[0,-16],
+    links:[
+      ['네이버 지도','https://map.naver.com/p/search/충주%20중앙탑사적공원','map'],
+      ['관광 정보','https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=60&searchMainSe=ATTR&tourNo=471','info']
+    ]
+  },
+  {
+    id:5,name:'충주고구려비전시관',short:'고구려비전시관',
+    lat:37.0125,lng:127.8514,showLat:37.0000,showLng:127.8290,
+    cat:'시내·역사',color:'#6b3f3f',tag:'실내 · 역사 전시',
+    desc:'국내 유일 고구려 석비인 충주 고구려비를 중심으로 고구려 문화와 중원 역사를 볼 수 있는 곳입니다.',
+    tipDir:'bottom',tipOffset:[0,16],
+    links:[
+      ['네이버 지도','https://map.naver.com/p/search/충주고구려비전시관','map'],
+      ['관광 정보','https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=83305ab8-af95-41a8-b129-389de4bddb9a','info'],
+      ['해설 예약','https://www.kctg.or.kr/tour/touristSiteView.do?tourist_cd=TOURIST_ID00010527','reserve']
+    ]
+  },
+  {
+    id:6,name:'수안보온천',short:'수안보온천',
+    lat:36.84838,lng:127.98967,showLat:36.84838,showLng:127.98967,
+    cat:'수안보·월악',color:'#4c5c73',tag:'온천 · 휴식',
+    desc:'오래된 온천 휴양지로 숙박과 온천욕을 함께 묶기 좋은 충주 남부권 대표 코스입니다.',
+    tipDir:'right',tipOffset:[12,0],
+    links:[
+      ['네이버 지도','https://map.naver.com/p/search/수안보온천','map'],
+      ['관광 정보','https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=b5650a0c-3f97-4f3b-89cd-e5f0a36cc36c','info'],
+      ['온천 정보','https://www.suanbo.or.kr/','park']
+    ]
+  },
+  {
+    id:7,name:'월악산국립공원',short:'월악산국립공원',
+    lat:36.8898,lng:128.0936,showLat:36.8898,showLng:128.0936,
+    cat:'수안보·월악',color:'#2f4f36',tag:'국립공원 · 산행',
+    desc:'영봉과 송계계곡, 덕주사 권역을 함께 보는 자연 코스. 탐방 전 통제 정보를 확인하는 것이 좋습니다.',
+    tipDir:'right',tipOffset:[12,0],
+    links:[
+      ['네이버 지도','https://map.naver.com/p/search/월악산국립공원','map'],
+      ['국립공원 정보','https://www.knps.or.kr/front/portal/visit/visitCourseMain.do?menuNo=7020097&parkId=121400','park'],
+      ['탐방코스','https://www.knps.or.kr/front/portal/visit/visitCourseSubMain.do?menuNo=7020097&parkId=121400&parkNavGb=park','info']
+    ]
+  },
+  {
+    id:8,name:'수주팔봉',short:'수주팔봉',
+    lat:36.8990,lng:127.9143,showLat:36.8990,showLng:127.9143,
+    cat:'수안보·월악',color:'#7a5436',tag:'절경 · 출렁다리',
+    desc:'달천과 여덟 봉우리가 어우러지는 충주 절경 명소. 출렁다리와 강변 풍경을 함께 보기 좋습니다.',
+    tipDir:'left',tipOffset:[-12,0],
+    links:[
+      ['네이버 지도','https://map.naver.com/p/search/수주팔봉','map'],
+      ['관광 정보','https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=6a052065-1151-40c2-bafa-1d820f995158','info'],
+      ['충북나드리','https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=60&searchMainSe=ATTR&tourNo=1289','park']
+    ]
+  }
 ];
-const categories=['전체','시내·역사','충주호권','수안보·월악'];let activeCategory='전체',selectedId=1;let markerLayer=L.layerGroup(),lineLayer=L.layerGroup();
-const map=L.map('map',{zoomControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,touchZoom:false,boxZoom:false,keyboard:false,attributionControl:true});
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:17}).addTo(map);markerLayer.addTo(map);lineLayer.addTo(map);
-const filtersEl=document.getElementById('filters'),cardsEl=document.getElementById('cards');
-function lockMap(){map.dragging.disable();map.scrollWheelZoom.disable();map.doubleClickZoom.disable();map.touchZoom.disable();map.boxZoom.disable();map.keyboard.disable();const el=map.getContainer();el.addEventListener('wheel',e=>e.preventDefault(),{passive:false});el.addEventListener('dblclick',e=>e.preventDefault());el.addEventListener('touchmove',e=>e.preventDefault(),{passive:false})}
-function currentPlaces(){return activeCategory==='전체'?places:places.filter(p=>p.cat===activeCategory)}
-function renderFilters(){filtersEl.innerHTML='';categories.forEach(cat=>{const btn=document.createElement('button');btn.className='filter'+(cat===activeCategory?' active':'');btn.textContent=cat;btn.addEventListener('click',()=>{activeCategory=cat;const first=currentPlaces()[0];selectedId=first?first.id:1;renderAll()});filtersEl.appendChild(btn)})}
-function renderMarkers(){markerLayer.clearLayers();lineLayer.clearLayers();const list=currentPlaces(),latlngs=list.map(p=>[p.lat,p.lng]);if(latlngs.length>1){L.polyline(latlngs,{color:'#6b6258',weight:2,dashArray:'6 6',opacity:.34,interactive:false}).addTo(lineLayer)}list.forEach(p=>{const is=p.id===selectedId;const icon=L.divIcon({className:'',html:`<div style="width:${is?18:14}px;height:${is?18:14}px;border-radius:50%;background:${p.color};border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.42);"></div>`,iconSize:[22,22],iconAnchor:[11,11]});const marker=L.marker([p.lat,p.lng],{icon,keyboard:false}).addTo(markerLayer);marker.bindTooltip(`<span class="tip-num" style="background:${p.color};">${p.id}</span>${p.short}`,{permanent:true,direction:p.tipDir,offset:p.tipOffset,className:'place-tooltip'});marker.openTooltip();marker.on('click',()=>selectPlace(p.id));setTimeout(()=>{const el=marker.getTooltip()?.getElement();if(el)el.addEventListener('click',()=>selectPlace(p.id))},120)});fitMap()}
-function fitMap(){const list=currentPlaces();if(!list.length)return;setTimeout(()=>{map.invalidateSize(false);const bounds=L.latLngBounds(list.map(p=>[p.lat,p.lng]));map.fitBounds(bounds,{paddingTopLeft:[62,62],paddingBottomRight:[62,62],maxZoom:activeCategory==='전체'?10:12,animate:false})},80);setTimeout(()=>map.invalidateSize(false),280)}
-function renderCards(){cardsEl.innerHTML='';currentPlaces().forEach(p=>{const card=document.createElement('article');card.className='place-card'+(p.id===selectedId?' active pop':'');card.id='card-'+p.id;card.style.setProperty('--c',p.color);const links=p.links.map(l=>`<a class="btn ${l.type}" href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join('');card.innerHTML=`<div class="card-main"><div class="num" style="background:${p.color};">${p.id}</div><div><div class="place-name">${p.name}</div><div class="desc">${p.desc}</div><div class="tag">${p.tag}</div></div></div><div class="card-buttons">${links}</div>`;card.addEventListener('click',e=>{if(e.target.closest('.btn'))return;selectPlace(p.id)});cardsEl.appendChild(card)})}
-function selectPlace(id){selectedId=id;renderCards();renderMarkers();const card=document.getElementById('card-'+id);if(card){cardsEl.prepend(card);cardsEl.scrollTo({top:0,behavior:'smooth'})}}
-function renderAll(){renderFilters();renderCards();renderMarkers()}lockMap();renderAll();window.addEventListener('load',()=>{setTimeout(fitMap,120);setTimeout(fitMap,500)});window.addEventListener('resize',()=>setTimeout(fitMap,120));
+
+const categories = ['전체','시내·역사','충주호권','수안보·월악'];
+let activeCategory = '전체';
+let selectedId = 1;
+const markerLayer = L.layerGroup();
+const lineLayer = L.layerGroup();
+
+const map = L.map('map', {
+  zoomControl:false,
+  dragging:false,
+  scrollWheelZoom:false,
+  doubleClickZoom:false,
+  touchZoom:false,
+  boxZoom:false,
+  keyboard:false,
+  attributionControl:true
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution:'© OpenStreetMap',
+  maxZoom:17
+}).addTo(map);
+
+markerLayer.addTo(map);
+lineLayer.addTo(map);
+
+const filtersEl = document.getElementById('filters');
+const cardsEl = document.getElementById('cards');
+
+function lockMap(){
+  map.dragging.disable();
+  map.scrollWheelZoom.disable();
+  map.doubleClickZoom.disable();
+  map.touchZoom.disable();
+  map.boxZoom.disable();
+  map.keyboard.disable();
+  const el = map.getContainer();
+  el.addEventListener('wheel', e => e.preventDefault(), { passive:false });
+  el.addEventListener('dblclick', e => e.preventDefault());
+  el.addEventListener('touchmove', e => e.preventDefault(), { passive:false });
+}
+
+function currentPlaces(){
+  return activeCategory === '전체' ? places : places.filter(p => p.cat === activeCategory);
+}
+
+function renderFilters(){
+  filtersEl.innerHTML = '';
+  categories.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'filter' + (cat === activeCategory ? ' active' : '');
+    btn.textContent = cat;
+    btn.addEventListener('click', () => {
+      activeCategory = cat;
+      const first = currentPlaces()[0];
+      selectedId = first ? first.id : 1;
+      renderAll();
+    });
+    filtersEl.appendChild(btn);
+  });
+}
+
+function renderMarkers(){
+  markerLayer.clearLayers();
+  lineLayer.clearLayers();
+
+  const list = currentPlaces();
+  const lineLatLngs = list.map(p => [p.lat, p.lng]);
+
+  if (lineLatLngs.length > 1) {
+    L.polyline(lineLatLngs, {
+      color:'#6b6258',
+      weight:2,
+      dashArray:'6 6',
+      opacity:.28,
+      interactive:false
+    }).addTo(lineLayer);
+  }
+
+  list.forEach(p => {
+    const isSelected = p.id === selectedId;
+    const icon = L.divIcon({
+      className:'',
+      html:`<div style="
+        width:${isSelected ? 18 : 14}px;
+        height:${isSelected ? 18 : 14}px;
+        border-radius:50%;
+        background:${p.color};
+        border:3px solid #fff;
+        box-shadow:0 2px 8px rgba(0,0,0,.42);
+      "></div>`,
+      iconSize:[24,24],
+      iconAnchor:[12,12]
+    });
+
+    const marker = L.marker([p.showLat,p.showLng], { icon, keyboard:false, zIndexOffset:isSelected ? 1000 : p.id * 10 }).addTo(markerLayer);
+
+    marker.bindTooltip(`<span class="tip-num" style="background:${p.color};">${p.id}</span>${p.short}`, {
+      permanent:true,
+      direction:p.tipDir,
+      offset:p.tipOffset,
+      className:'place-tooltip'
+    });
+
+    marker.openTooltip();
+    marker.on('click', () => selectPlace(p.id));
+
+    setTimeout(() => {
+      const el = marker.getTooltip()?.getElement();
+      if (el) el.addEventListener('click', () => selectPlace(p.id));
+    }, 120);
+  });
+
+  fitMap();
+}
+
+function fitMap(){
+  const list = currentPlaces();
+  if (!list.length) return;
+
+  setTimeout(() => {
+    map.invalidateSize(false);
+    const bounds = L.latLngBounds(list.map(p => [p.showLat,p.showLng]));
+    map.fitBounds(bounds, {
+      paddingTopLeft:[78,78],
+      paddingBottomRight:[78,78],
+      maxZoom: activeCategory === '전체' ? 10 : 12,
+      animate:false
+    });
+  }, 90);
+
+  setTimeout(() => map.invalidateSize(false), 300);
+}
+
+function renderCards(){
+  cardsEl.innerHTML = '';
+  currentPlaces().forEach(p => {
+    const card = document.createElement('article');
+    card.className = 'place-card' + (p.id === selectedId ? ' active pop' : '');
+    card.id = 'card-' + p.id;
+    card.style.setProperty('--c', p.color);
+
+    const links = p.links.map(([label,url,type]) => 
+      `<a class="btn ${type}" href="${url}" target="_blank" rel="noopener">${label}</a>`
+    ).join('');
+
+    card.innerHTML = `
+      <div class="card-main">
+        <div class="num" style="background:${p.color};">${p.id}</div>
+        <div>
+          <div class="place-name">${p.name}</div>
+          <div class="desc">${p.desc}</div>
+          <div class="tag">${p.tag}</div>
+        </div>
+      </div>
+      <div class="card-buttons">${links}</div>
+    `;
+
+    card.addEventListener('click', e => {
+      if (e.target.closest('.btn')) return;
+      selectPlace(p.id);
+    });
+
+    cardsEl.appendChild(card);
+  });
+}
+
+function selectPlace(id){
+  selectedId = id;
+  renderCards();
+  renderMarkers();
+  const card = document.getElementById('card-' + id);
+  if (card) {
+    cardsEl.prepend(card);
+    cardsEl.scrollTo({ top:0, behavior:'smooth' });
+  }
+}
+
+function renderAll(){
+  renderFilters();
+  renderCards();
+  renderMarkers();
+}
+
+lockMap();
+renderAll();
+
+window.addEventListener('load', () => {
+  setTimeout(fitMap, 120);
+  setTimeout(fitMap, 500);
+});
+window.addEventListener('resize', () => setTimeout(fitMap, 120));
 </script>
 </body>
 </html>
